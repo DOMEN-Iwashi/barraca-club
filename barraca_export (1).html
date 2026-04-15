@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#080808"/>
+<title>Barraca Club</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:Arial,sans-serif;background:#080808;color:#e0e0e0;max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:70px;overflow-x:hidden}
+input{background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:14px 16px;color:#e0e0e0;font-size:14px;width:100%;display:block;margin-bottom:14px;outline:none;font-family:Arial,sans-serif}
+button{font-family:Arial,sans-serif;cursor:pointer;border:none}
+.screen{display:none}
+.screen.active{display:block}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;transition:opacity 0.5s}
+.dot{width:6px;height:6px;border-radius:50%;background:#222;display:inline-block;margin:0 3px;animation:pulse 1s infinite alternate}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{to{background:#d4a017}}
+
+/* HEADER */
+#header{background:#0d0d0d;border-bottom:1px solid #1e1e1e;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-size:18px;font-weight:900;letter-spacing:5px;color:#fff}
+.logo-sub{font-size:9px;letter-spacing:6px;display:block;margin-top:1px}
+.avatar{width:34px;height:34px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+
+/* NAV */
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#0d0d0d;border-top:1px solid #1e1e1e;display:flex;z-index:20}
+.nav-btn{flex:1;padding:12px 0;font-size:9px;font-weight:700;background:none;border:none;color:#444;letter-spacing:2px;transition:color 0.2s}
+.nav-btn.active{color:#d4a017}
+
+/* CARDS */
+.card{background:#111;border:1px solid #1e1e1e;border-radius:14px;padding:18px 20px;margin:14px 18px 0}
+.hero-card{background:#0e0e0e;border:1px solid #d4a01733;border-radius:16px;padding:24px 22px;margin:14px 18px 0;position:relative;overflow:hidden}
+.section-title{font-size:9px;color:#555;letter-spacing:4px;margin:20px 18px 0;font-weight:700}
+.info-box{background:#0e0e0e;border:1px solid #1a1a1a;border-radius:10px;padding:14px 18px;margin-bottom:10px}
+
+/* LEVEL RING */
+.level-ring{width:70px;height:70px;border-radius:50%;border:2px solid var(--lc);display:flex;align-items:center;justify-content:center;flex-direction:column;background:#0a0a0a;flex-shrink:0}
+
+/* PROGRESS BAR */
+.bar-wrap{background:#1a1a1a;border-radius:3px;height:4px;margin:14px 0 5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.6s cubic-bezier(.4,0,.2,1)}
+
+/* ROWS */
+.perk-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #161616}
+.hist-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #141414}
+.hist-icon{width:34px;height:34px;border-radius:50%;background:#181818;border:1px solid #222;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.lineup-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #141414}
+.event-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #141414}
+
+/* BUTTONS */
+.sim-btns{display:flex;gap:8px;margin:10px 18px 0}
+.sim-btn{flex:1;padding:11px 0;font-size:10px;font-weight:700;letter-spacing:1px;background:#111;border-radius:10px;transition:opacity 0.15s}
+.primary-btn{width:100%;padding:15px;background:#d4a017;color:#000;font-weight:900;font-size:13px;letter-spacing:3px;border-radius:10px;margin-bottom:12px}
+.ghost-btn{width:100%;padding:14px;background:transparent;color:#d4a017;font-weight:700;font-size:12px;letter-spacing:2px;border:1px solid #d4a01744;border-radius:10px}
+.social-btn{flex:1;padding:12px 0;background:#111;border:1px solid #1e1e1e;border-radius:10px;font-size:8px;color:#888;letter-spacing:1px}
+
+/* GALLERY */
+.gall-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:14px 18px 0}
+.gall-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#ffffff15}
+
+/* TOAST */
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:#1a1a1a;color:#d4a017;border:1px solid #d4a01755;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:700;letter-spacing:1px;z-index:999;white-space:nowrap;opacity:0;transition:all 0.3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* LEVELUP */
+#levelup{position:fixed;top:0;left:0;right:0;background:#0a0a0a;border-bottom:2px solid #d4a017;padding:20px;text-align:center;z-index:200;transform:translateY(-100%);transition:transform 0.4s}
+#levelup.show{transform:translateY(0)}
+
+/* LOGIN */
+#login-screen{background:#080808;min-height:100vh;padding:60px 28px 20px}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div style="font-size:26px;font-weight:900;letter-spacing:8px;color:#fff;margin-bottom:6px">BARRACA</div>
+  <div style="font-size:10px;color:#d4a017;letter-spacing:8px">BARRACA CLUB</div>
+  <div style="margin-top:40px">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- LEVELUP BANNER -->
+<div id="levelup">
+  <div style="font-size:11px;color:#666;letter-spacing:3px;margin-bottom:4px">NUEVO NIVEL</div>
+  <div id="levelup-name" style="font-size:22px;font-weight:900;letter-spacing:4px"></div>
+  <div style="font-size:11px;color:#888;margin-top:4px">Nuevos beneficios desbloqueados</div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div style="text-align:center;margin-bottom:40px">
+    <div style="font-size:22px;font-weight:900;letter-spacing:6px;color:#fff">BARRACA</div>
+    <div style="font-size:9px;color:#d4a017;letter-spacing:6px;margin-bottom:32px">BARRACA CLUB</div>
+    <div style="font-size:16px;color:#888">Accede a tu cuenta</div>
+  </div>
+  <input placeholder="Email" type="email" id="email-input"/>
+  <input placeholder="Contraseña" type="password" id="pass-input"/>
+  <button class="primary-btn" onclick="enterApp()">ENTRAR</button>
+  <button class="ghost-btn" onclick="enterApp()">Crear cuenta nueva</button>
+  <div style="margin-top:16px;padding:14px;background:#111;border:1px solid #2a2a2a;border-radius:10px;text-align:center">
+    <div style="font-size:9px;color:#555;letter-spacing:3px;margin-bottom:8px">ACCESO DEMO</div>
+    <div style="font-size:12px;color:#888;margin-bottom:4px">usuario: <span style="color:#d4a017">demo@barracaclub.com</span></div>
+    <div style="font-size:12px;color:#888">contraseña: <span style="color:#d4a017">barraca2025</span></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" style="display:none">
+  <div id="header">
+    <div>
+      <span class="logo">BARRACA</span>
+      <span class="logo-sub" style="color:#d4a017">BARRACA CLUB</span>
+    </div>
+    <div class="avatar" style="border:1px solid #d4a01755;color:#d4a017">AB</div>
+  </div>
+
+  <!-- TAB: CLUB -->
+  <div id="tab-Club" class="screen active">
+    <div class="hero-card">
+      <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:#d4a01708"></div>
+      <div style="display:flex;align-items:center;gap:18px">
+        <div class="level-ring" id="level-ring" style="--lc:#d4a017">
+          <span id="ring-label" style="font-size:9px;font-weight:700;letter-spacing:1px;color:#d4a017">BRONCE</span>
+        </div>
+        <div>
+          <div style="font-size:36px;font-weight:900;color:#fff;line-height:1" id="pts-display">820</div>
+          <div style="font-size:10px;color:#555;letter-spacing:3px;margin-top:2px">PUNTOS ACUMULADOS</div>
+          <div style="font-size:11px;color:#666;margin-top:6px">Socio · Alberto B.</div>
+        </div>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" id="bar-fill" style="background:linear-gradient(90deg,#d4a01766,#d4a017)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#444">
+        <span id="bar-left" style="color:#d4a017">Plata</span>
+        <span id="bar-right"></span>
+      </div>
+    </div>
+
+    <div class="section-title">ACUMULAR PUNTOS</div>
+    <div class="sim-btns">
+      <button class="sim-btn" style="color:#d4a017;border:1px solid #d4a01733" onclick="addPts(50,'Asistencia a evento','◈')">◈ Evento +50</button>
+      <button class="sim-btn" style="color:#b0b0b0;border:1px solid #b0b0b033" onclick="addPts(30,'Compra de entrada','◉')">◉ Entrada +30</button>
+      <button class="sim-btn" style="color:#cd7f32;border:1px solid #cd7f3233" onclick="addPts(20,'Consumición','▣')">▣ Barra +20</button>
+      <button class="sim-btn" style="color:#666;border:1px solid #66666633" onclick="addPts(10,'Compartido en redes','◆')">◆ Redes +10</button>
+    </div>
+
+    <div class="section-title">BENEFICIOS</div>
+    <div class="card" id="perks-list"></div>
+
+    <div class="section-title">HISTORIAL DE PUNTOS</div>
+    <div class="card" id="history-list"></div>
+  </div>
+
+  <!-- TAB: EVENTOS -->
+  <div id="tab-Eventos" class="screen">
+    <div class="section-title">PRÓXIMAS NOCHES</div>
+    <div class="card">
+      <div class="event-row">
+        <div style="min-width:44px;text-align:center"><div style="font-size:16px;font-weight:900;color:#fff">19</div><div style="font-size:10px;color:#555">ABR</div></div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#ddd">SILES B2B LUCAS CABELLO</div><div style="font-size:10px;color:#555;margin-top:2px">Barraca · Sueca</div></div>
+        <div style="font-size:9px;color:#d4a017;border:1px solid #d4a01744;padding:3px 8px;border-radius:20px;letter-spacing:1px">ESPECIAL</div>
+      </div>
+      <div class="event-row">
+        <div style="min-width:44px;text-align:center"><div style="font-size:16px;font-weight:900;color:#fff">26</div><div style="font-size:10px;color:#555">ABR</div></div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#ddd">DOMEN · SOU ALLEN</div><div style="font-size:10px;color:#555;margin-top:2px">Barraca · Sueca</div></div>
+        <div style="font-size:9px;color:#e24b4a;border:1px solid #e24b4a44;padding:3px 8px;border-radius:20px;letter-spacing:1px">SOLD OUT</div>
+      </div>
+      <div class="event-row">
+        <div style="min-width:44px;text-align:center"><div style="font-size:16px;font-weight:900;color:#fff">10</div><div style="font-size:10px;color:#555">MAY</div></div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#ddd">RESIDENTES NOCHE</div><div style="font-size:10px;color:#555;margin-top:2px">Barraca · Sueca</div></div>
+        <div style="font-size:9px;color:#d4a017;border:1px solid #d4a01744;padding:3px 8px;border-radius:20px;letter-spacing:1px">PRÓXIMO</div>
+      </div>
+    </div>
+
+    <div class="section-title">LINEUP · PRÓXIMA NOCHE</div>
+    <div class="card">
+      <div class="lineup-row">
+        <div style="font-size:12px;color:#555;font-weight:700;min-width:44px">23:00</div>
+        <div><div style="font-size:13px;font-weight:900;color:#fff;letter-spacing:1px">SILES</div><div style="font-size:10px;color:#555;margin-top:2px">Techno / Minimal · Circo</div></div>
+      </div>
+      <div class="lineup-row">
+        <div style="font-size:12px;color:#555;font-weight:700;min-width:44px">01:00</div>
+        <div><div style="font-size:13px;font-weight:900;color:#fff;letter-spacing:1px">LUCAS CABELLO</div><div style="font-size:10px;color:#555;margin-top:2px">Hard Techno / Schranz · Circo</div></div>
+      </div>
+      <div class="lineup-row">
+        <div style="font-size:12px;color:#d4a017;font-weight:700;min-width:44px">03:00</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;font-weight:900;color:#fff;letter-spacing:1px">DOMEN</span>
+            <span style="font-size:8px;color:#d4a017;border:1px solid #d4a01755;padding:2px 6px;border-radius:10px;letter-spacing:1px">DESTACADO</span>
+          </div>
+          <div style="font-size:10px;color:#555;margin-top:2px">Raw / Hypnotic Techno · Circo</div>
+        </div>
+      </div>
+      <div class="lineup-row">
+        <div style="font-size:12px;color:#555;font-weight:700;min-width:44px">05:00</div>
+        <div><div style="font-size:13px;font-weight:900;color:#fff;letter-spacing:1px">SOU ALLEN</div><div style="font-size:10px;color:#555;margin-top:2px">Deep / Dark Techno · Circo</div></div>
+      </div>
+      <div class="lineup-row">
+        <div style="font-size:12px;color:#555;font-weight:700;min-width:44px">00:00</div>
+        <div><div style="font-size:13px;font-weight:900;color:#fff;letter-spacing:1px">LUCAS CABELLO</div><div style="font-size:10px;color:#555;margin-top:2px">Hard Techno · La Barraca</div></div>
+      </div>
+      <div class="lineup-row" style="border:none">
+        <div style="font-size:12px;color:#555;font-weight:700;min-width:44px">02:00</div>
+        <div><div style="font-size:13px;font-weight:900;color:#fff;letter-spacing:1px">SILES</div><div style="font-size:10px;color:#555;margin-top:2px">Minimal / House · Terraza</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: INFO -->
+  <div id="tab-Info" class="screen">
+    <div class="section-title">VENUE</div>
+    <div style="margin:12px 18px 0">
+      <div class="info-box"><div style="font-size:10px;color:#555;letter-spacing:2px;margin-bottom:4px">DIRECCIÓN</div><div style="font-size:13px;color:#ccc">Les Palmeres, Playa de Sueca, Valencia</div></div>
+      <div class="info-box"><div style="font-size:10px;color:#555;letter-spacing:2px;margin-bottom:4px">HORARIO</div><div style="font-size:13px;color:#ccc">Sábados · 00:30 – 07:30</div></div>
+      <div class="info-box"><div style="font-size:10px;color:#555;letter-spacing:2px;margin-bottom:4px">BUS DESDE VALENCIA</div><div style="font-size:13px;color:#ccc">Salida Plaza España 22:30 · Mestalla 22:45</div></div>
+      <div class="info-box"><div style="font-size:10px;color:#555;letter-spacing:2px;margin-bottom:4px">PARKING</div><div style="font-size:13px;color:#ccc">Disponible en el recinto</div></div>
+      <button class="primary-btn" style="margin-top:8px" onclick="showToast('Abriendo Resident Advisor...')">COMPRAR ENTRADAS</button>
+    </div>
+    <div class="section-title">SÍGUENOS</div>
+    <div style="display:flex;gap:8px;margin:12px 18px 0">
+      <button class="social-btn" onclick="showToast('Abriendo Instagram...')">INSTAGRAM</button>
+      <button class="social-btn" onclick="showToast('Abriendo TikTok...')">TIKTOK</button>
+      <button class="social-btn" onclick="showToast('Abriendo SoundCloud...')">SOUNDCLOUD</button>
+      <button class="social-btn" onclick="showToast('Abriendo RA...')">RA</button>
+    </div>
+  </div>
+
+  <!-- TAB: GALERÍA -->
+  <div id="tab-Galería" class="screen">
+    <div class="section-title">GALERÍA</div>
+    <div class="gall-grid">
+      <div class="gall-cell" style="background:#1a0a00" onclick="showToast('Galería próximamente...')">▶</div>
+      <div class="gall-cell" style="background:#080818" onclick="showToast('Galería próximamente...')">▶</div>
+      <div class="gall-cell" style="background:#141400" onclick="showToast('Galería próximamente...')">▶</div>
+      <div class="gall-cell" style="background:#0d0d0d" onclick="showToast('Galería próximamente...')">▶</div>
+      <div class="gall-cell" style="background:#180808" onclick="showToast('Galería próximamente...')">▶</div>
+      <div class="gall-cell" style="background:#081408" onclick="showToast('Galería próximamente...')">▶</div>
+      <div class="gall-cell" style="background:#111" onclick="showToast('Galería próximamente...')">▶</div>
+      <div class="gall-cell" style="background:#0d0a18" onclick="showToast('Galería próximamente...')">▶</div>
+      <div class="gall-cell" style="background:#180d00" onclick="showToast('Galería próximamente...')">▶</div>
+    </div>
+    <div style="text-align:center;padding:20px;font-size:11px;color:#333">Conecta tu galería de contenido</div>
+  </div>
+
+  <!-- NAV -->
+  <div id="nav">
+    <button class="nav-btn active" onclick="switchTab('Club',this)">CLUB</button>
+    <button class="nav-btn" onclick="switchTab('Eventos',this)">EVENTOS</button>
+    <button class="nav-btn" onclick="switchTab('Info',this)">INFO</button>
+    <button class="nav-btn" onclick="switchTab('Galería',this)">GALERÍA</button>
+  </div>
+</div>
+
+<script>
+const LEVELS=[
+  {name:"Bronce",min:0,max:499,color:"#cd7f32",next:"Plata",nextMin:500},
+  {name:"Plata",min:500,max:1499,color:"#b0b0b0",next:"Oro",nextMin:1500},
+  {name:"Oro",min:1500,max:99999,color:"#d4a017",next:null,nextMin:null}
+];
+const ALL_PERKS=[
+  {perk:"Descuento 5% en entradas",level:"Bronce",color:"#cd7f32"},
+  {perk:"Acceso a preventa",level:"Bronce",color:"#cd7f32"},
+  {perk:"Descuento 10% en entradas",level:"Plata",color:"#b0b0b0"},
+  {perk:"Lista prioritaria",level:"Plata",color:"#b0b0b0"},
+  {perk:"Descuento 20% en entradas",level:"Oro",color:"#d4a017"},
+  {perk:"Lista VIP + backstage",level:"Oro",color:"#d4a017"},
+  {perk:"Eventos privados exclusivos",level:"Oro",color:"#d4a017"},
+  {perk:"Merch firmado",level:"Oro",color:"#d4a017"},
+];
+const HISTORY_INIT=[
+  {date:"12 Abr",desc:"Asistencia a evento",pts:50,icon:"◈"},
+  {date:"05 Abr",desc:"Compra de entrada",pts:30,icon:"◉"},
+  {date:"29 Mar",desc:"Consumición en barra",pts:20,icon:"▣"},
+  {date:"22 Mar",desc:"Compartido en redes",pts:10,icon:"◆"},
+  {date:"15 Mar",desc:"Asistencia a evento",pts:50,icon:"◈"},
+];
+
+let points=820, history=[...HISTORY_INIT], prevLvlIdx=1, toastTimer=null;
+
+function getLevel(p){return[...LEVELS].reverse().find(l=>p>=l.min)||LEVELS[0];}
+function getLvlIdx(p){return LEVELS.indexOf(getLevel(p));}
+
+function updateUI(){
+  const lv=getLevel(points), idx=getLvlIdx(points), c=lv.color;
+  const next=LEVELS[idx+1];
+  const prog=next?Math.round((points-lv.min)/(next.min-lv.min)*100):100;
+
+  document.getElementById('pts-display').textContent=points.toLocaleString();
+  document.getElementById('ring-label').textContent=lv.name.toUpperCase();
+  document.getElementById('ring-label').style.color=c;
+  document.getElementById('level-ring').style.setProperty('--lc',c);
+  document.getElementById('level-ring').style.borderColor=c;
+  document.getElementById('bar-fill').style.width=prog+'%';
+  document.getElementById('bar-fill').style.background=`linear-gradient(90deg,${c}66,${c})`;
+  document.getElementById('bar-left').textContent=lv.name;
+  document.getElementById('bar-left').style.color=c;
+  document.getElementById('bar-right').textContent=next?`Faltan ${(next.min-points).toLocaleString()} pts para ${next.name}`:'Nivel máximo';
+  document.querySelector('.logo-sub').style.color=c;
+  document.querySelector('.avatar').style.borderColor=c+'55';
+  document.querySelector('.avatar').style.color=c;
+  document.querySelectorAll('.nav-btn.active').forEach(b=>b.style.color=c);
+
+  const perksEl=document.getElementById('perks-list');
+  perksEl.innerHTML=ALL_PERKS.map(p=>{
+    const pvIdx=LEVELS.findIndex(l=>l.name===p.level);
+    const locked=pvIdx>idx;
+    return `<div class="perk-row" style="opacity:${locked?'0.35':'1'}">
+      <div style="width:7px;height:7px;border-radius:50%;background:${locked?'#2a2a2a':p.color};flex-shrink:0"></div>
+      <span style="font-size:13px;color:${locked?'#444':'#ccc'};flex:1">${p.perk}</span>
+      <span style="font-size:9px;color:${locked?'#333':p.color};letter-spacing:2px">${p.level.toUpperCase()}</span>
+    </div>`;
+  }).join('');
+
+  const histEl=document.getElementById('history-list');
+  histEl.innerHTML=history.slice(0,6).map(h=>`
+    <div class="hist-row">
+      <div class="hist-icon" style="color:${c}">${h.icon}</div>
+      <div style="flex:1"><div style="font-size:13px;color:#ccc">${h.desc}</div><div style="font-size:10px;color:#444;margin-top:2px">${h.date}</div></div>
+      <div style="font-size:14px;font-weight:700;color:#3d9e4a">+${h.pts}</div>
+    </div>`).join('');
+}
+
+function addPts(n,desc,icon){
+  const newPts=points+n;
+  const newIdx=getLvlIdx(newPts);
+  points=newPts;
+  history=[{date:'Hoy',desc,pts:n,icon},...history.slice(0,9)];
+  updateUI();
+  showToast(`+${n} puntos · ${desc}`);
+  if(newIdx>prevLvlIdx){
+    prevLvlIdx=newIdx;
+    const lv=getLevel(points);
+    document.getElementById('levelup-name').textContent=lv.name.toUpperCase();
+    document.getElementById('levelup-name').style.color=lv.color;
+    document.getElementById('levelup').classList.add('show');
+    setTimeout(()=>document.getElementById('levelup').classList.remove('show'),3000);
+  }
+}
+
+let toastT=null;
+function showToast(msg){
+  clearTimeout(toastT);
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  toastT=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function switchTab(name,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.remove('active');b.style.color='#444';});
+  btn.classList.add('active');
+  btn.style.color=getLevel(points).color;
+}
+
+function enterApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  updateUI();
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>{
+    document.getElementById('splash').style.opacity='0';
+    setTimeout(()=>document.getElementById('splash').style.display='none',500);
+  },1800);
+  updateUI();
+});
+</script>
+</body>
+</html>
